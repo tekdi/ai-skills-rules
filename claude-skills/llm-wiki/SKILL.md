@@ -2,7 +2,7 @@
 name: llm-wiki
 description: >
   Generates a complete AI-native service wiki from repository analysis for human onboarding,
-  Business Operations Transfer (BOT — Business of Transfer), and AI-agent long-term memory. Use when the user asks
+  Business Operations Transfer (BOT), and AI-agent long-term memory. Use when the user asks
   to generate a wiki, service documentation, repository documentation, ai-context.md,
   repository-map.md, BOT documentation, onboarding docs, or LLM-native documentation for
   a codebase. Trigger on phrases like "create wiki", "document this service", "generate
@@ -20,7 +20,7 @@ Your task is to analyze the entire repository and generate a complete AI-native 
 The wiki must satisfy three goals:
 
 1. Human onboarding and knowledge transfer.
-2. BOT (Business of Transfer) documentation.
+2. BOT (Business Operations Transfer) documentation.
 3. AI-agent understanding and long-term repository memory.
 
 ---
@@ -252,8 +252,8 @@ Each TOC entry must link to the corresponding markdown file using relative paths
 `wiki-index.md` is the navigational hub; `README.md` is the executive entry point with a
 brief service summary at the top.
 
-**README.md must spell out BOT on first use:** `BOT (Business of Transfer)` — in the wiki
-purpose line, Quick Start audience table, and Document Control table (e.g. "BOT (Business of
+**README.md must spell out BOT on first use:** `BOT (Business Operations Transfer)` — in the wiki
+purpose line, Quick Start audience table, and Document Control table (e.g. "BOT (Business Operations
 Transfer) checklist").
 
 ---
@@ -563,7 +563,7 @@ Before reporting completion, verify:
 - [ ] Cross-links to debt items use `technical-debt.md#td-xx` anchors, not a separate known-issues file
 - [ ] Cross-links work between related documents
 - [ ] Mermaid diagrams render for major flows and components
-- [ ] `README.md` uses `BOT (Business of Transfer)` on first mention in purpose, Quick Start, and Document Control
+- [ ] `README.md` uses `BOT (Business Operations Transfer)` on first mention in purpose, Quick Start, and Document Control
 - [ ] `integrations/ai-llm.md` includes **Model, Parameters & API-Key Management** and **Response Handling**
 - [ ] `integrations/third-party-integrations.md` includes **Fallback Behavior**
 - [ ] `integrations/bigquery.md` includes **Quota Considerations**
