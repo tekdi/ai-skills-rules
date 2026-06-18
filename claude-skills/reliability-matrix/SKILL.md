@@ -124,7 +124,7 @@ For each row record:
 
 ### Step 5 — Write per-row evidence file
 
-Create `docs/reliability/evidence/<Code>.md` (e.g. `OBS-01.md`) with:
+Create `docs/reliability/evidence/<Code>.md` (e.g. `OB5.md`) with:
 
 ```markdown
 # Evidence: <Code> — <Parameter>
@@ -258,8 +258,8 @@ docs/reliability/
 ├── improvement-backlog.md
 └── evidence/
     ├── README.md
-    ├── OBS-01.md
-    ├── OBS-02.md
+    ├── CQ1.md
+    ├── OB1.md
     └── ... (one file per matrix row)
 ```
 
@@ -302,21 +302,14 @@ Evidence:
 
 For large repositories, work in pillar batches to stay thorough:
 
-1. Observability (OBS-01 … OBS-05)
-2. Security (SEC-01 … SEC-07)
-3. Resilience (RES-01 … RES-04)
-4. Deployment (DEP-01 … DEP-04)
-5. Testing (TST-01 … TST-04)
-6. Documentation (DOC-01 … DOC-04)
-7. Configuration (CFG-01 … CFG-03)
-8. Data Reliability (DAT-01 … DAT-03)
-9. Performance (PRF-01 … PRF-03)
-10. Operations (OPS-01 … OPS-03)
-11. CI/CD (CICD-01 … CICD-03)
-12. Disaster Recovery (DR-01 … DR-02)
-13. AI/LLM Reliability (AIR-01 … AIR-04)
-14. Async Processing (ASY-01 … ASY-04)
-15. API Reliability (API-01 … API-03)
+1. Code Quality & Architecture (CQ1 … CQ7)
+2. Observability & Alerting (OB1 … OB9)
+3. Error Handling & Resilience (EH1 … EH8)
+4. Testing (TE1 … TE9)
+5. CI/CD & Deployment (CD1 … CD9)
+6. API & Interface Contracts (AP1 … AP8)
+7. Documentation — Stripe-grade (DO1 … DO11)
+8. Security & Compliance (SC1 … SC6)
 
 After all rows are scored, generate executive summary and improvement backlog last so
 aggregates are accurate.
@@ -327,7 +320,7 @@ aggregates are accurate.
 
 Before finishing, verify:
 
-- [ ] All 56 matrix rows evaluated (or all rows in custom matrix)
+- [ ] All 67 matrix rows evaluated (or all rows in custom matrix)
 - [ ] Every row has a score, assessment, evidence, and gap analysis
 - [ ] Every row has an evidence file in `evidence/`
 - [ ] `reliability-assessment.csv` matches the markdown table
