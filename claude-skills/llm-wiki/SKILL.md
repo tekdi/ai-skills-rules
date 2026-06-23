@@ -63,6 +63,20 @@ Analyze the full codebase systematically before writing:
 Record actual file paths, class names, function names, and config keys as you discover them.
 Never invent details not found in the repository.
 
+### Code verification rule (mandatory)
+
+Before documenting any behaviour, command, config file, test suite, or diagram detail:
+
+1. **Confirm it exists** — read the source file, run the command, or glob for the path.
+2. **Label the status** using one of:
+   - **Implemented (verified)** — default for claims traced to source files.
+   - **Recommended (not yet implemented)** — patterns, thresholds, or tooling suggested but absent from the repo.
+   - **Note callout** — when a BOT section has no evidence at all.
+3. **Never present recommendations as current fact** — e.g. do not list `augmentation/tests/test_views_.py` or `.coveragerc` unless those files exist.
+4. **Deduplicate across wiki pages** — one canonical diagram per flow; other pages link to it instead of repeating Mermaid blocks.
+
+When regenerating an existing wiki, re-verify claims against the current codebase and correct stale content.
+
 ---
 
 ## BOT Coverage Checklist
@@ -158,7 +172,11 @@ docs/wiki/<service-name>/
 │   ├── system-context.md
 │   ├── component-diagram.md
 │   ├── sequence-diagrams.md
-│   └── deployment-architecture.md
+│   ├── deployment-architecture.md
+│   ├── configuration.md
+│   ├── testing.md
+│   ├── coding-patterns.md
+│   └── repository-conventions.md
 ├── application/
 │   ├── frontend.md
 │   ├── backend.md
@@ -176,22 +194,20 @@ docs/wiki/<service-name>/
 │   ├── monitoring.md
 │   ├── troubleshooting.md
 │   └── disaster-recovery.md
-├── engineering/
-│   ├── configuration.md
-│   ├── testing.md
-│   ├── coding-patterns.md
-│   └── repository-conventions.md
 ├── knowledge/
 │   ├── glossary.md
 │   ├── technical-debt.md
 │   ├── references.md
 │   └── legacy-artifacts.md
-└── assets/
-    ├── architecture.png          (optional — prefer Mermaid in markdown)
-    ├── erd.png                   (optional — prefer Mermaid in markdown)
-    ├── workflow-diagrams/
-    └── sequence-diagrams/
 ```
+
+> **Wiki layout rule:** All architecture diagrams (sequence, workflow, component, deployment)
+> and engineering reference docs (configuration, testing, coding patterns, repository conventions)
+> live under `architecture/`. Do **not** create separate `assets/` or `engineering/` folders.
+> Embed Mermaid diagrams inline in the appropriate architecture page. Use `sequence-diagrams.md`
+> as the **single canonical file** for both interaction sequences and workflow flowcharts.
+> `business/workflows.md` lists workflow IDs and narrative steps only — link to
+> `sequence-diagrams.md` for diagrams; do not duplicate Mermaid blocks there.
 
 ---
 
@@ -215,7 +231,12 @@ The TOC must include:
 # Architecture
 * System Context
 * Components
+* Sequence & Workflow Diagrams
 * Deployment Architecture
+* Configuration
+* Testing
+* Coding Standards
+* Repository Conventions
 
 # Application
 * Frontend
@@ -235,11 +256,6 @@ The TOC must include:
 * Deployment
 * Monitoring
 * Troubleshooting
-
-# Engineering
-* Configuration
-* Testing
-* Coding Standards
 
 # Knowledge Base
 * Glossary
@@ -323,15 +339,18 @@ For each major folder explain:
 ## Documentation Quality Rules
 
 1. **Never hallucinate.**
-2. Reference actual source files.
-3. Reference actual classes.
-4. Reference actual functions.
-5. Reference actual APIs.
-6. Reference actual configuration files.
-7. Generate Mermaid diagrams wherever possible.
-8. Generate ERDs when database models are available.
-9. Link documents together extensively.
-10. Treat the generated wiki as the single source of truth for both humans and AI agents.
+2. **Verify before writing** — glob/read source to confirm files, tests, config, and commands exist.
+3. **Separate implemented from recommended** — use a **Recommended (not yet implemented)** section when documenting aspirational patterns.
+4. Reference actual source files.
+5. Reference actual classes.
+6. Reference actual functions.
+7. Reference actual APIs.
+8. Reference actual configuration files.
+9. Generate Mermaid diagrams wherever possible.
+10. Generate ERDs when database models are available.
+11. Link documents together extensively.
+12. **Deduplicate diagrams** — one canonical Mermaid block per flow; link from other pages.
+13. Treat the generated wiki as the single source of truth for both humans and AI agents.
 
 When information is missing from the repository, use a customer-friendly **Note** callout
 (see next section). Never use internal-only phrasing such as "Information Not Found In
@@ -417,7 +436,7 @@ Use this blockquote pattern consistently across all wiki pages:
 |----------|------------------|
 | Any wiki page section | `> **Note:** …` blockquote |
 | `wiki-index.md` Document Control table | `Called out with plain-language **Note** sections where details are not documented in this wiki` |
-| `repository-conventions.md` | Document convention: *Call out undocumented areas with plain-language **Note** callouts* |
+| `architecture/repository-conventions.md` | Document convention: *Call out undocumented areas with plain-language **Note** callouts* |
 | `ai-context.md` | Omit undocumented topics or state briefly in prose — do **not** use gap blockquotes in the AI entry doc |
 | Agent working notes / completion report | May list "Topics documented with Notes" for internal tracking — still avoid "Information Not Found In Repository" in generated wiki files |
 
@@ -442,12 +461,11 @@ Write files in this order so later docs can cross-link to earlier ones:
 Task Progress:
 - [ ] ai-context.md
 - [ ] repository-map.md
-- [ ] architecture/architecture-overview.md
+- [ ] architecture/ (all files — overview, diagrams, configuration, testing, coding patterns, conventions)
 - [ ] business/ (all files)
 - [ ] application/ (all files)
 - [ ] integrations/ (all files)
 - [ ] operations/ (all files)
-- [ ] engineering/ (all files)
 - [ ] knowledge/ (all files)
 - [ ] README.md + wiki-index.md (TOC last, after all files exist)
 - [ ] BOT coverage verification
@@ -458,8 +476,13 @@ Task Progress:
 **business/** — Infer from code comments, domain models, README, and issue trackers. Mark
 inferred business rules as "Inferred from code" when not explicitly documented.
 
-**architecture/** — Include Mermaid C4-style or component diagrams. Sequence diagrams for
-critical request flows (auth, payment, data sync, etc.).
+**architecture/** — Include Mermaid C4-style or component diagrams. Sequence diagrams and
+workflow flowcharts both go in `sequence-diagrams.md` (single canonical diagrams file).
+`architecture-overview.md` holds a diagram index and links — not duplicate diagrams.
+`business/workflows.md` describes workflow IDs and steps; link to `sequence-diagrams.md`
+for visuals. Document configuration (env var tables), testing (verified current state +
+clearly labelled recommendations), coding patterns, and repository conventions in dedicated
+pages under `architecture/`. Do **not** create separate `assets/` or `engineering/` folders.
 
 **application/** — Trace actual routes, handlers, models. Include endpoint tables with
 method, path, handler file, and purpose.
@@ -479,9 +502,6 @@ trace all claims to source code):
 
 **operations/** — Extract from Dockerfile, docker-compose, K8s manifests, Terraform, CI
 workflows, and monitoring configs.
-
-**engineering/** — Document real test commands, lint commands, env var tables, and patterns
-observed in the codebase.
 
 **knowledge/** — Glossary from domain terms in code. **`technical-debt.md` is the single
 register for all debt, bugs, limitations, and architectural risks** — do not create a
@@ -519,11 +539,32 @@ remediation roadmap. Cross-link from other wiki pages to specific `TD-XX` anchor
 When the BOT checklist mentions "Known Issues", map that coverage to `technical-debt.md`
 and phrase items as technical debt — not as a separate "known issues" document.
 
+**Mandatory: `architecture/testing.md` structure when tests are absent or partial:**
+
+```markdown
+# Testing
+
+## Current State (verified in repository)
+| Attribute | Status |
+| ... | **Not present** / Stub only / Yes |
+
+> **Note:** [Plain-language gap statement]
+
+## Manual QA
+[Only if evidence exists — e.g. QA spreadsheet]
+
+## Recommended Setup (not yet implemented)
+[Commands, layout, coverage targets — clearly labelled as recommended]
+```
+
+When tests **do** exist, lead with **Current State** tables traced to actual test files,
+then optional **Recommended improvements** for gaps (E2E, CI, higher coverage).
+
 ---
 
 ## Phase 3 — Diagrams
 
-Prefer inline Mermaid in markdown files:
+Prefer inline Mermaid in markdown files under `architecture/`:
 
 ```markdown
 ```mermaid
@@ -544,7 +585,20 @@ erDiagram
 ```
 ```
 
-Store complex diagrams under `assets/` only when Mermaid inline is insufficient.
+**Diagram placement:**
+
+| Diagram type | Target file |
+|---|---|
+| System context, C4 | `architecture/system-context.md`, `component-diagram.md` |
+| Request/response sequences | `architecture/sequence-diagrams.md` |
+| Business/workflow flowcharts | `architecture/sequence-diagrams.md` (same file — do not split) |
+| Deployment topology | `architecture/deployment-architecture.md` |
+| ERD | `application/database.md` |
+| Diagram index | `architecture/architecture-overview.md` (links only — no duplicate diagrams) |
+| Workflow narrative (no diagrams) | `business/workflows.md` (links to `sequence-diagrams.md`) |
+
+Embed all Mermaid diagrams directly in these pages. Do **not** create an `assets/` folder or
+a separate `workflow-diagrams.md` for flowcharts.
 
 ---
 
@@ -563,8 +617,14 @@ Before reporting completion, verify:
 - [ ] `knowledge/technical-debt.md` exists and is the **only** debt/issues register (no `known-issues.md`)
 - [ ] Cross-links to debt items use `technical-debt.md#td-xx` anchors, not a separate known-issues file
 - [ ] Cross-links work between related documents
-- [ ] Mermaid diagrams render for major flows and components
+- [ ] No separate `assets/` or `engineering/` folders — diagrams and engineering docs live under `architecture/`
+- [ ] `architecture/sequence-diagrams.md` is the single canonical diagrams file (sequences + flowcharts)
+- [ ] No duplicate Mermaid diagrams across `architecture/` and `business/workflows.md`
+- [ ] `architecture/testing.md` separates **Current State (verified)** from **Recommended (not yet implemented)**
+- [ ] No false claims about test files, `.coveragerc`, CI jobs, or commands absent from the repo
+- [ ] `architecture/configuration.md`, `testing.md`, `coding-patterns.md`, `repository-conventions.md` exist
 - [ ] `README.md` and `wiki-index.md` use `BOT (Business Operations Transfer)` on first mention; `glossary.md` defines BOT as Business Operations Transfer
+- [ ] Mermaid diagrams render for major flows and components
 - [ ] `integrations/ai-llm.md` includes **Model, Parameters & API-Key Management** and **Response Handling**
 - [ ] `integrations/third-party-integrations.md` includes **Fallback Behavior**
 - [ ] `integrations/bigquery.md` includes **Quota Considerations**
@@ -606,6 +666,9 @@ When finished, provide:
 
 - **Analyze before writing.** Read source code; do not guess from folder names alone.
 - **Code is truth.** Every technical claim must trace to a file in the repository.
+- **Verify tests and tooling.** Glob for test directories, `.coveragerc`, CI workflows before documenting them.
+- **Label aspirational content.** Use **Recommended (not yet implemented)** — never imply tests or config exist when they do not.
+- **Deduplicate diagrams.** One canonical Mermaid block per flow; link elsewhere.
 - **Complete over perfect.** Create every required file; document missing evidence honestly
   using customer-friendly **Note** callouts — never "Information Not Found In Repository".
 - **Link aggressively.** Any mention of another topic should link to its wiki page.
