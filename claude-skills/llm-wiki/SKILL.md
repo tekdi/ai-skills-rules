@@ -252,9 +252,10 @@ Each TOC entry must link to the corresponding markdown file using relative paths
 `wiki-index.md` is the navigational hub; `README.md` is the executive entry point with a
 brief service summary at the top.
 
-**README.md must spell out BOT on first use:** `BOT (Business Operations Transfer)` — in the wiki
-purpose line, Quick Start audience table, and Document Control table (e.g. "BOT (Business Operations
-Transfer) checklist").
+**README.md and wiki-index.md must spell out BOT on first use:** `BOT (Business Operations Transfer)` — in the wiki
+purpose line, Quick Start audience table, Document Control table, and wiki-index Document Control
+(e.g. "BOT (Business Operations Transfer) checklist"). `knowledge/glossary.md` must define **BOT** as
+Business Operations Transfer.
 
 ---
 
@@ -563,7 +564,7 @@ Before reporting completion, verify:
 - [ ] Cross-links to debt items use `technical-debt.md#td-xx` anchors, not a separate known-issues file
 - [ ] Cross-links work between related documents
 - [ ] Mermaid diagrams render for major flows and components
-- [ ] `README.md` uses `BOT (Business Operations Transfer)` on first mention in purpose, Quick Start, and Document Control
+- [ ] `README.md` and `wiki-index.md` use `BOT (Business Operations Transfer)` on first mention; `glossary.md` defines BOT as Business Operations Transfer
 - [ ] `integrations/ai-llm.md` includes **Model, Parameters & API-Key Management** and **Response Handling**
 - [ ] `integrations/third-party-integrations.md` includes **Fallback Behavior**
 - [ ] `integrations/bigquery.md` includes **Quota Considerations**
