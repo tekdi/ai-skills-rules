@@ -8,7 +8,7 @@ description: >
   Trigger on phrases like "reliability matrix", "reliability assessment", "reliability audit",
   "production readiness", "SRE scorecard", or "maturity assessment". Evaluates source code,
   CI/CD, infrastructure, tests, documentation, wiki, monitoring, and deployment assets.
-  Produces executive summary, assessment table, CSV, improvement backlog, and per-row evidence.
+  Produces executive summary, assessment table, CSV, and improvement backlog.
 ---
 
 # Reliability Matrix Assessment
@@ -113,53 +113,79 @@ Use `Grep`, `Glob`, and targeted `Read` — do not rely on memory.
 Apply the 0–10 scale from [score-key.md](score-key.md). Reduce the score when evidence
 is missing, partial, or not enforced in CI/production.
 
-### Step 4 — Document findings
+### Step 4 — Document findings (detailed columns required)
 
-For each row record:
+For each row record **Score (0–10)** plus three **detailed** narrative columns.
+These columns must be substantive enough for an auditor to verify the score without
+reading source code. One-line summaries are **not acceptable**.
 
-- **Score (0–10)**
-- **Assessment** — brief explanation of why the score was assigned
-- **Evidence** — specific repository references (paths, classes, functions, config keys, CI jobs)
-- **Gap Analysis** — what is missing to achieve a score of 10
+#### Assessment column (minimum 3–5 sentences)
 
-### Step 5 — Write per-row evidence file
+Must answer all of:
 
-Create `docs/reliability/evidence/<Code>.md` (e.g. `OB5.md`) with:
+1. Which parts of the **Condition of Satisfaction** are fully met, partially met, or not met
+2. Why this **specific score** was chosen (and why not one point higher or lower)
+3. Whether the capability is **ad hoc**, **documented**, **enforced in CI**, or **operationalized in production**
+4. Any **conservative scoring** rationale when evidence is ambiguous
 
-```markdown
-# Evidence: <Code> — <Parameter>
+**Template:**
 
-**Pillar:** <Pillar>
-**Tier:** <Tier>
-**Score:** X/10
-
-## Condition of Satisfaction
-
-<full condition text>
-
-## Assessment
-
-<brief assessment>
-
-## Evidence Located
-
-| Source | Detail |
-|--------|--------|
-| Repository | `<path>` — <detail> |
-| Wiki | `<wiki-path>` — <detail> |
-
-## Gap Analysis
-
-<what is missing for score 10>
-
-## Score Rationale
-
-- **Satisfied elements:** ...
-- **Missing elements:** ...
-- **Conservative scoring:** Score assigned only where repository or wiki evidence exists
+```
+The condition requires [X]. [Component A] is present in [location] but [limitation].
+[Component B] is absent — searched [paths/patterns]. Score N reflects partial
+implementation: [satisfied elements] are in place, but [missing elements] prevent
+a higher score because [reliability impact].
 ```
 
-Also create `docs/reliability/evidence/README.md` indexing all evidence files by pillar.
+#### Evidence column (structured, path-specific)
+
+Must include **both** positive and negative findings:
+
+```
+FOUND:
+- `<path>` (line/class/function) — <what it proves>
+- `<wiki-path>` — <supporting detail>
+
+SEARCHED, NOT FOUND:
+- `<pattern or path>` — <what was expected>
+- CI jobs: <workflow names searched>
+```
+
+Rules:
+
+- Every **FOUND** item must include a repository-relative file path
+- Include **line numbers, class names, function names, or config keys** where applicable
+- List **searches performed** when evidence is absent (proves the gap was investigated)
+- Never write vague evidence like "logging exists" — specify the formatter, handler, and file
+
+#### Gap Analysis column (actionable remediation)
+
+Must include **concrete steps** to reach score 10:
+
+```
+TO REACH 10:
+1. [Specific action] — target: `<file/module>` or CI job name
+2. [Specific action] — tooling: e.g. GitHub Actions, Dependabot, OpenTelemetry
+3. [Verification step] — how to confirm the gap is closed
+
+BLOCKERS: [dependencies on other rows, infra, or team decisions]
+EFFORT: Small / Medium / Large
+```
+
+Do not write generic gaps like "improve testing" — name the test type, directory, and threshold.
+
+#### Column length guidance
+
+| Column | Markdown (per-row sections) | CSV export |
+|--------|----------------------------|------------|
+| Assessment | 3–5 sentences | Same text, CSV-escaped |
+| Evidence | FOUND + SEARCHED sections | Same text, semicolon-separated lists |
+| Gap Analysis | Numbered steps + effort | Same text |
+
+The **CSV is the authoritative machine-readable export** for Assessment, Evidence, and Gap
+Analysis. `reliability-assessment.md` is the human-readable view (index table, per-pillar
+detail sections, cross-cutting search paths). Both must contain **identical column text**
+per row.
 
 ---
 
@@ -170,18 +196,25 @@ Also create `docs/reliability/evidence/README.md` indexing all evidence files by
 Include:
 
 - Assessment metadata (service, date, row count, overall average)
+- Note: **Authoritative detail: CSV export; this document is the human-readable view.**
 - Matrix definition note (standard vs custom)
 - Score key table (from [score-key.md](score-key.md))
-- Assessment table:
+- **Cross-cutting evidence locations** table (repo areas searched: source, CI, wiki, etc.)
+- Assessment index table (Code, Pillar, Parameter, Score, link to detail sections)
+- Assessment table (all columns; **Assessment / Evidence / Gap Analysis must use the
+  detailed formats from Step 4**, not one-line summaries):
 
 | Code | Pillar | Parameter | Tier | Condition of Satisfaction | Score | Assessment | Evidence | Gap Analysis |
 | ---- | ------ | --------- | ---- | ------------------------- | ----- | ---------- | -------- | ------------ |
 
-- Detailed per-row sections with **Why this score was assigned** including:
-  - What evidence was found
-  - What evidence was missing
+- **Per-pillar detail sections** below the index (recommended when rows exceed 20):
+  repeat each row as a subsection with full Assessment, Evidence, and Gap Analysis paragraphs
+
+- Each detailed row section must include:
+  - What evidence was found (with paths)
+  - What evidence was missing (with searches performed)
   - Which parts of the condition were satisfied / not satisfied
-  - Link to `evidence/<Code>.md`
+  - Numbered remediation steps to reach score 10
 
 ### 2. `reliability-assessment.csv`
 
@@ -255,12 +288,7 @@ docs/reliability/
 ├── executive-summary.md
 ├── reliability-assessment.md
 ├── reliability-assessment.csv
-├── improvement-backlog.md
-└── evidence/
-    ├── README.md
-    ├── CQ1.md
-    ├── OB1.md
-    └── ... (one file per matrix row)
+└── improvement-backlog.md
 ```
 
 ---
@@ -279,21 +307,28 @@ docs/reliability/
 
 ## Explanation Template (per row)
 
-Use this pattern in detailed assessments:
+Use this pattern in CSV columns and markdown per-row sections:
 
 ```
 Score: 6
 
-Reason:
-Linting exists and runs in CI.
-However, lint failures are warnings only and do not block merges.
-The style guide exists but is not linked from README.
-Therefore the condition is partially met but not fully enforced.
+Assessment:
+The condition requires lint config in repo, CI failure on lint errors, and a README-linked
+style guide. Ruff and ESLint configs exist (ruff.toml, .eslintrc.json) satisfying the first
+requirement. However, Glob `.github/workflows/**` returned zero CI files — lint is never run
+on PRs. README.md has no lint section linking the style guide. Score 6 (not 7): configs
+exist but enforcement and discoverability gaps remain.
 
 Evidence:
-- .github/workflows/build.yml
-- .eslintrc.json
-- docs/wiki/<service-name>/engineering/repository-conventions.md
+FOUND: ruff.toml (select E4,E7,E9,F,B); .eslintrc.json (extends eslint:recommended)
+SEARCHED, NOT FOUND: .github/workflows/* (expected lint job); README.md#linting (expected link)
+
+Gap Analysis:
+TO REACH 10:
+1. Add `.github/workflows/ci.yml` job `lint` running `ruff check .` and `eslint .` — fail on error
+2. Add README "Code Style" section linking ruff.toml and eslint config
+3. Verify: open PR with lint violation → CI fails
+EFFORT: Small
 ```
 
 ---
@@ -321,9 +356,12 @@ aggregates are accurate.
 Before finishing, verify:
 
 - [ ] All 67 matrix rows evaluated (or all rows in custom matrix)
-- [ ] Every row has a score, assessment, evidence, and gap analysis
-- [ ] Every row has an evidence file in `evidence/`
-- [ ] `reliability-assessment.csv` matches the markdown table
+- [ ] Every row has a score plus **detailed** Assessment, Evidence, and Gap Analysis (not one-liners)
+- [ ] Every Assessment column explains condition satisfaction and score rationale (3+ sentences)
+- [ ] Every Evidence column lists FOUND paths **and** SEARCHED-NOT-FOUND items
+- [ ] Every Gap Analysis column has numbered remediation steps with target files/CI jobs
+- [ ] `reliability-assessment.csv` column text **matches** the markdown per-row sections exactly
+- [ ] `reliability-assessment.md` includes cross-cutting evidence locations and authoritative-detail note
 - [ ] `improvement-backlog.md` has tasks for all rows scoring &lt; 8
 - [ ] `executive-summary.md` includes pillar/tier breakdowns and maturity band
 - [ ] No unsupported claims — every score traceable to evidence or its absence
