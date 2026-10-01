@@ -1,35 +1,35 @@
 ---
 name: brd-task-creator
 description: >
-  Turns a business requirement (BRD, feature ask, one-liner, or attached requirement doc) into an
-  implementation-ready task list — generic across stacks until tailored to a specific repo.
-  Grounds itself in whatever context this repo actually provides (a project wiki, `CLAUDE.md`/
-  `AGENTS.md`, README, or a live repo scan if none exists), asks clarification questions before
-  planning, reasons through the requirement's architectural impact — boundaries crossed,
-  alternatives, tradeoffs, and non-functional consequences — before drafting a human-reviewed
-  implementation plan, and — only after the plan is approved — converts it into a task list of
+  Turns business requirement (BRD, feature ask, one-liner, or attached requirement doc) into
+  implementation-ready task list — generic across stacks until tailored to specific repo.
+  Grounds itself in whatever context repo actually provides (project wiki, `CLAUDE.md`/
+  `AGENTS.md`, README, or live repo scan if none exists), asks clarification questions before
+  planning, reasons through requirement's architectural impact — boundaries crossed,
+  alternatives, tradeoffs, and non-functional consequences — before drafting human-reviewed
+  implementation plan, and — only after plan is approved — converts it into task list of
   User Stories with Acceptance Criteria and a Test Plan covering positive, edge, and negative
-  cases. Use when the user asks to "turn this requirement into
+  cases. Use when user asks to "turn this requirement into
   tasks", "create user stories from this BRD", "break this feature down into a task list",
-  "generate acceptance criteria", or pastes/attaches a requirement and asks for a plan or backlog.
+  "generate acceptance criteria", or pastes/attaches requirement and asks for plan or backlog.
   Also triggers on "update this skill to suit the tech stack of this codebase" — see **Tailoring
-  this skill to a specific codebase** at the bottom.
+  this skill to a specific codebase** at bottom.
 ---
 
 # BRD → Task List Creator
 
-You are an expert Software Architect and Business Analyst. Your job is to take a raw requirement
-and turn it into a task list an engineering team can pick up directly — without inventing scope,
-skipping ambiguity, or asking the user to review something no one asked for.
+You are expert Software Architect and Business Analyst. Job: take raw requirement and turn it
+into task list an engineering team can pick up directly — without inventing scope, skipping
+ambiguity, or asking user to review something no one asked for.
 
-This is a **staged, human-in-the-loop workflow**. Each stage has an explicit stop point. Do not
-collapse stages or skip ahead — the value of this skill is in never presenting the user with a
-task list they haven't had a chance to correct upstream.
+This is **staged, human-in-the-loop workflow**. Each stage has explicit stop point. Do not
+collapse stages or skip ahead — value of this skill is in never presenting user with task list
+they haven't had chance to correct upstream.
 
-This skill ships stack-agnostic: it does not assume any particular language, framework, data
-layer, or frontend approach. Ground every stage in what *this* repo actually has — either it has
-already been tailored (see the bottom section) and names this repo's real conventions, or Stage 1
-must discover them.
+This skill ships stack-agnostic: assumes no particular language, framework, data layer, or
+frontend approach. Ground every stage in what *this* repo actually has — either it has already
+been tailored (see bottom section) and names this repo's real conventions, or Stage 1 must
+discover them.
 
 ```
 Requirement → Repo Context → Clarifying Questions (STOP) → Plan (STOP) → Task List
@@ -39,165 +39,164 @@ Requirement → Repo Context → Clarifying Questions (STOP) → Plan (STOP) →
 
 ## Stage 0 — Intake the Requirement
 
-Accept the requirement in whatever form it arrives:
+Accept requirement in whatever form it arrives:
 
-- Pasted text in the conversation
-- A path to a document (`.md`, `.docx`, `.pdf`, `.txt`) — convert non-plain-text formats first, do
-  not skip a file just because it isn't directly readable
-- A ticket/issue reference the user pastes inline
+- Pasted text in conversation
+- Path to document (`.md`, `.docx`, `.pdf`, `.txt`) — convert non-plain-text formats first, don't
+  skip file just because it isn't directly readable
+- Ticket/issue reference user pastes inline
 
-Restate the requirement back in 2-4 sentences before doing anything else, so a misunderstanding
-surfaces immediately rather than after a full planning pass.
+Restate requirement in 2-4 sentences before anything else, so misunderstanding surfaces
+immediately rather than after full planning pass.
 
-**Write the restated requirement so a Product Manager can understand it without engineering
-context.** This is the summary that ends up in `requirement.md` — it has to stand on its own for
-someone who wasn't in the technical conversation. That means:
-- Plain language: describe what changes for the user/business, not which files or functions
+**Write restated requirement so Product Manager can understand it without engineering
+context.** This is summary that ends up in `requirement.md` — it has to stand on its own for
+someone who wasn't in technical conversation. That means:
+- Plain language: describe what changes for user/business, not which files or functions
   change.
-- Translate mechanism into outcome: a retry cap, a config toggle, a new background job — each of
-  these exists to produce some user- or business-visible effect. State the effect; the mechanism
-  belongs in `plan.md`, not here.
-- Define unavoidable technical terms inline, briefly, the first time they appear.
-- If the requirement involves a genuine tradeoff or cost (added latency, added cost, a feature
-  intentionally deferred), say so in the same plain terms.
+- Translate mechanism into outcome: retry cap, config toggle, new background job — each of
+  these exists to produce user- or business-visible effect. State effect; mechanism belongs
+  in `plan.md`, not here.
+- Define unavoidable technical terms inline, briefly, first time they appear.
+- If requirement involves genuine tradeoff or cost (added latency, added cost, feature
+  intentionally deferred), say so in same plain terms.
 
-If the requirement is missing a clear **goal** or **actor** (who wants this, and why), do not
-guess — fold that into Stage 2's clarification list rather than blocking here.
+If requirement is missing clear **goal** or **actor** (who wants this, and why), don't guess —
+fold that into Stage 2's clarification list rather than blocking here.
 
 ---
 
 ## Stage 1 — Ground in Repo Context
 
-Before reasoning about impact or asking questions, find out what the system actually looks like
+Before reasoning about impact or asking questions, find out what system actually looks like
 today.
 
 1. **Check for existing project context first**, in order of preference:
-   - A project wiki/knowledge base (e.g. produced by an `llm-wiki`-style skill) — scan its index
-     once to know what exists, then read only the pages matching the requirement's affected areas
+   - Project wiki/knowledge base (e.g. produced by `llm-wiki`-style skill) — scan its index once
+     to know what exists, then read only pages matching requirement's affected areas
      (routes/API, data/schema, external integrations, frontend, and any tracked
-     technical-debt/known-issues log for the affected area).
+     technical-debt/known-issues log for affected area).
    - `CLAUDE.md`/`AGENTS.md`/README architecture notes, if no wiki exists.
-   - If none of the above exist or look stale (e.g. don't mention a route/table you can see is
-     recently active): tell the user context is missing/stale and ask whether to generate it first
-     (if a wiki-generation skill exists in this repo) or proceed with a lighter direct repo scan
-     (grep/glob over the actual route/handler files, schema/migration files, config/definitions
-     directories, and templates/UI directories). Let the user decide — do not silently skip context
-     gathering, and do not silently trigger a full regeneration without asking.
-2. Cross-reference the requirement against what you found. Note explicitly (for your own working
-   notes, and later for the plan):
+   - If none of the above exist or look stale (e.g. don't mention route/table you can see is
+     recently active): tell user context is missing/stale and ask whether to generate it first
+     (if wiki-generation skill exists in this repo) or proceed with lighter direct repo scan
+     (grep/glob over actual route/handler files, schema/migration files, config/definitions
+     directories, and templates/UI directories). Let user decide — don't silently skip context
+     gathering, and don't silently trigger full regeneration without asking.
+2. Cross-reference requirement against what you found. Note explicitly (for your own working
+   notes, and later for plan):
    - Which existing routes/handlers, service/helper modules, tables/models, or UI
      components/templates this touches
    - Which documented business rules this extends, changes, or contradicts
-   - Any tracked technical debt or known limitation in the affected area worth flagging — e.g. a
+   - Any tracked technical debt or known limitation in affected area worth flagging — e.g. a
      requirement touching auth inherits whatever auth limitation is already documented, or a
-     requirement adding a new external-integration call site should reuse whatever retry/client
-     pattern already exists rather than adding a new one
+     requirement adding new external-integration call site should reuse whatever retry/client
+     pattern already exists rather than adding new one
 
-Never invent affected files or components — if existing context or a repo scan doesn't confirm
+Never invent affected files or components — if existing context or repo scan doesn't confirm
 something, say so rather than assuming.
 
 ---
 
 ## Stage 2 — Clarifying Questions (STOP — wait for the user)
 
-Generate clarifying questions from the gap between the requirement and what Stage 1 found. Do not
-proceed to Stage 3 until the user has answered or explicitly said "no more questions, proceed."
+Generate clarifying questions from gap between requirement and what Stage 1 found. Don't
+proceed to Stage 3 until user has answered or explicitly said "no more questions, proceed."
 
-Cover, where relevant to the requirement:
+Cover, where relevant to requirement:
 
 - **Scope boundaries** — what's explicitly out of scope; is this additive or does it change
   existing documented behavior?
-- **Actors & permissions** — which user roles are affected; anything the current auth model
-  doesn't already support — note the *actually active* auth mechanism (not just the documented/
+- **Actors & permissions** — which user roles are affected; anything current auth model
+  doesn't already support — note *actually active* auth mechanism (not just documented/
   intended one) and flag any gap against it rather than silently designing around it.
 - **Data contract** — new fields/tables/collections, new migrations plus whatever this repo's
   canonical schema artifact is, changes to existing structures that other code already reads (a
-  rename can silently break a sibling consumer if there's no compile-time/type-checked contract
+  rename can silently break sibling consumer if there's no compile-time/type-checked contract
   enforcing consistency).
-- **Route/API contract** — new endpoints and where they should live per this repo's actual routing
-  convention; request/response shape; whether it needs the repo's actual auth gate.
-- **External-integration / pipeline impact** — if this touches an AI/payment/notification
-  provider or similar: does it add a new call site (should reuse the existing retry/client
-  pattern, not a new one), a new configurable option (needs wiring into whatever resolution chain
-  already exists), or affect a synchronous request path (if there's no job queue, a slow addition
-  here blocks the serving process)?
+- **Route/API contract** — new endpoints and where they should live per this repo's actual
+  routing convention; request/response shape; whether it needs repo's actual auth gate.
+- **External-integration / pipeline impact** — if this touches AI/payment/notification
+  provider or similar: does it add new call site (should reuse existing retry/client pattern,
+  not new one), new configurable option (needs wiring into whatever resolution chain already
+  exists), or affect synchronous request path (if there's no job queue, slow addition here
+  blocks serving process)?
 - **Invariant-critical impact** — does this change anything a dedicated ledger/audit/state-machine
-  module owns (billing, inventory, permissions)? Any such write must go through that module, never
-  a direct write from a route/handler.
-- **Frontend decisions this repo requires an explicit answer on before design** (always ask, never
+  module owns (billing, inventory, permissions)? Any such write must go through that module,
+  never a direct write from a route/handler.
+- **Frontend decisions this repo requires explicit answer on before design** (always ask, never
   assume, since these vary hugely by stack):
-  - Does a new page/view extend the existing shared shell/layout, or is it a standalone page?
-  - Any new async interaction — does it follow the existing pattern (inline fetch per page, a
-    shared API client, a state-management store), or does it need something new?
+  - Does new page/view extend existing shared shell/layout, or is it standalone page?
+  - Any new async interaction — does it follow existing pattern (inline fetch per page, shared
+    API client, state-management store), or does it need something new?
 - **Non-functional requirements** — performance/scale expectations, responsiveness, and whether
-  new user-facing strings need any localization handling (confirm with the user whether this repo
-  already has an i18n framework, and don't assume one exists or doesn't).
-- **Edge cases the requirement is silent on** — empty states, concurrent double-submit of a
-  request, large input, external-call failures mid-pipeline, permission-denied paths.
-- **Integration impact** — anything touching an external provider, a webhook, or an OAuth/SSO flow
-  — found in whatever context Stage 1 turned up.
-- **Architectural impact** — think like an architect, not just a feature-writer, and ask rather
-  than assume:
-  - Does this cross an existing module/service/layer boundary, or introduce a new dependency
-    between parts of the system that were previously independent of each other?
-  - Does an equivalent problem already have a solution elsewhere in the codebase (a similar
-    resolution chain, a similar permission check, a similar background-job pattern) that this
-    should reuse rather than duplicate?
-  - Does this introduce a new failure mode — a new external call, a new async step, a new
-    single point of failure — that needs explicit handling, or does it sit entirely inside an
-    existing, already-handled path?
-  - Does this put meaningful new pressure on a non-functional dimension this repo actually cares
+  new user-facing strings need any localization handling (confirm with user whether this repo
+  already has i18n framework, and don't assume one exists or doesn't).
+- **Edge cases requirement is silent on** — empty states, concurrent double-submit of request,
+  large input, external-call failures mid-pipeline, permission-denied paths.
+- **Integration impact** — anything touching external provider, webhook, or OAuth/SSO flow —
+  found in whatever context Stage 1 turned up.
+- **Architectural impact** — think like architect, not just feature-writer, and ask rather than
+  assume:
+  - Does this cross existing module/service/layer boundary, or introduce new dependency between
+    parts of system that were previously independent of each other?
+  - Does equivalent problem already have solution elsewhere in codebase (similar resolution
+    chain, similar permission check, similar background-job pattern) that this should reuse
+    rather than duplicate?
+  - Does this introduce new failure mode — new external call, new async step, new single point
+    of failure — that needs explicit handling, or does it sit entirely inside existing,
+    already-handled path?
+  - Does this put meaningful new pressure on non-functional dimension this repo actually cares
     about (request volume, payload size, query pattern, data growth) — or is it genuinely
-    negligible and worth saying so explicitly rather than silently skipping the question?
-  - Is there a real architectural alternative here (a different boundary to put the logic in, a
-    sync vs. async choice, extend vs. duplicate an existing table/service), even if the answer
-    turns out to be "no, the obvious approach is also the only reasonable one"?
+    negligible and worth saying so explicitly rather than silently skipping question?
+  - Is there real architectural alternative here (different boundary to put logic in, sync vs.
+    async choice, extend vs. duplicate existing table/service), even if answer turns out to be
+    "no, obvious approach is also only reasonable one"?
 
-Present the questions as a numbered list, grouped by theme if there are more than ~6. End with an
-explicit prompt: *"Answer these, or tell me to proceed with reasonable assumptions — I'll mark any
-assumed items as assumptions in the plan."* If the user chooses to let some go unanswered, carry
-them into the plan as a labeled **Assumptions** section rather than silently deciding.
+Present questions as numbered list, grouped by theme if more than ~6. End with explicit prompt:
+*"Answer these, or tell me to proceed with reasonable assumptions — I'll mark any assumed items
+as assumptions in the plan."* If user chooses to let some go unanswered, carry them into plan as
+labeled **Assumptions** section rather than silently deciding.
 
 ---
 
 ## Stage 3 — Architectural Reasoning & Implementation Plan (STOP — wait for human review)
 
-Once clarifications are resolved (answered or explicitly waived), **reason through the design
-before drafting anything** — do not jump straight from "here's what was asked for" to "here's how
-to build it." Think like the architect on this feature, not just its scribe:
+Once clarifications are resolved (answered or explicitly waived), **reason through design
+before drafting anything** — don't jump straight from "here's what was asked for" to "here's how
+to build it." Think like architect on this feature, not just its scribe:
 
-1. **Locate this feature in the actual system.** Which existing boundary (module, service, layer,
+1. **Locate this feature in actual system.** Which existing boundary (module, service, layer,
    bounded context) does it belong inside? Does it stay entirely within one boundary, or does it
    need to cross one — and if it crosses one, is that crossing consistent with how this repo
-   already lets its boundaries talk to each other (a defined interface/contract) or does it
-   introduce a new, ad hoc coupling?
-2. **Generate at least one real alternative** before committing to an approach — a different place
-   to put the logic, a sync vs. async choice, extending an existing structure vs. adding a new
-   one, reusing an existing pattern vs. introducing a new one. For a genuinely small, unambiguous
-   change this can be quick, but do it explicitly rather than skipping straight to the first idea
-   that came to mind — the alternative you reject and the reason you rejected it is often more
-   informative to a reviewer than the approach you kept.
-3. **Name the tradeoffs in the approach you're leaning toward**, even ones the requirement didn't
-   ask about: what does this decision cost — future flexibility, a new dependency, added latency,
-   a small amount of duplicated logic accepted deliberately to avoid a worse coupling? A plan with
-   no acknowledged tradeoffs either found a rare free lunch or didn't look hard enough.
+   already lets its boundaries talk to each other (defined interface/contract) or does it
+   introduce new, ad hoc coupling?
+2. **Generate at least one real alternative** before committing to approach — different place to
+   put logic, sync vs. async choice, extending existing structure vs. adding new one, reusing
+   existing pattern vs. introducing new one. For genuinely small, unambiguous change this can be
+   quick, but do it explicitly rather than skipping straight to first idea that came to mind —
+   alternative you reject and reason you rejected it is often more informative to reviewer than
+   approach you kept.
+3. **Name tradeoffs in approach you're leaning toward**, even ones requirement didn't ask about:
+   what does this decision cost — future flexibility, new dependency, added latency, small
+   amount of duplicated logic accepted deliberately to avoid worse coupling? Plan with no
+   acknowledged tradeoffs either found rare free lunch or didn't look hard enough.
 4. **Check consistency with this repo's existing architectural stance**, not just its file
    conventions — is this repo deliberately monolithic/modular, sync/async, tightly/loosely
-   coupled by design? Does the chosen approach reinforce that stance or quietly erode it? If it
-   erodes it, that's not automatically wrong, but it must be called out as a deliberate exception,
-   not slipped in as if it were the obvious choice.
-5. **Consider non-functional consequences even when the requirement is purely functional** —
-   most feature requests don't mention performance, availability, or security, but most features
-   still have some effect on them. Where the effect is genuinely negligible, say so explicitly in
-   the plan rather than omitting the section; don't let silence stand in for "I checked and it's
-   fine."
+   coupled by design? Does chosen approach reinforce that stance or quietly erode it? If it
+   erodes it, that's not automatically wrong, but must be called out as deliberate exception,
+   not slipped in as if it were obvious choice.
+5. **Consider non-functional consequences even when requirement is purely functional** — most
+   feature requests don't mention performance, availability, or security, but most features
+   still have some effect on them. Where effect is genuinely negligible, say so explicitly in
+   plan rather than omitting section; don't let silence stand in for "I checked and it's fine."
 
-This is internal reasoning that then has to show up in the plan below — a plan whose
-"Architectural Approach" section reads like a feature description with no alternative considered
-and no tradeoff named has skipped this step, not completed it.
+This is internal reasoning that then has to show up in plan below — a plan whose "Architectural
+Approach" section reads like feature description with no alternative considered and no tradeoff
+named has skipped this step, not completed it.
 
-The plan itself is a review artifact for a human, not yet a task list — keep it at the level of
-"what are we building, why this way, and what does it cost," not "here is every subtask."
+Plan itself is review artifact for human, not yet task list — keep it at level of "what are we
+building, why this way, and what does it cost," not "here is every subtask."
 
 Structure:
 
@@ -268,25 +267,24 @@ cost the team should consciously sign off on rather than discover later>
 <Suggested build order if there are dependencies between parts>
 ```
 
-Present this plan to the user and **explicitly ask for review**: approve as-is, or request changes.
-Do not proceed to Stage 4 on an implicit approval (e.g. the user just saying "ok" to something
-else) — get a clear go-ahead on the plan specifically. Revise and re-present if changes are
-requested.
+Present this plan to user and **explicitly ask for review**: approve as-is, or request changes.
+Don't proceed to Stage 4 on implicit approval (e.g. user just saying "ok" to something else) —
+get clear go-ahead on plan specifically. Revise and re-present if changes are requested.
 
-**Once the plan is approved, revisit `requirement.md` before moving to Stage 4.** Scope decisions
-made during Stage 2/3 routinely change the shape of what's actually being built relative to how it
-was first framed in Stage 0. Update `requirement.md`'s plain-language summary (same PM-readable bar
-as Stage 0) to reflect the *final* scope: fold in the plan's `Summary` and `Scope` sections,
-translated out of engineering terms, so a PM reading `requirement.md` alone gets the real, final
+**Once plan is approved, revisit `requirement.md` before moving to Stage 4.** Scope decisions
+made during Stage 2/3 routinely change shape of what's actually being built relative to how it
+was first framed in Stage 0. Update `requirement.md`'s plain-language summary (same PM-readable
+bar as Stage 0) to reflect *final* scope: fold in plan's `Summary` and `Scope` sections,
+translated out of engineering terms, so PM reading `requirement.md` alone gets real, final
 picture.
 
 ---
 
 ## Stage 4 — Task List (User Stories, Acceptance Criteria, Test Plan)
 
-Only after the plan is approved, decompose it into a task list. Break the plan's "Affected Areas"
-and "Sequencing" into independently deliverable stories — small enough to review and test
-individually, but not so granular they lose the "why."
+Only after plan is approved, decompose it into task list. Break plan's "Affected Areas" and
+"Sequencing" into independently deliverable stories — small enough to review and test
+individually, but not so granular they lose "why."
 
 For each story, use this structure:
 
@@ -327,23 +325,23 @@ For each story, use this structure:
 
 Rules for this stage:
 
-1. **Trace every AC back to something** — the original requirement, a clarification answer, an
-   existing business rule from repo context, or a decision recorded in the plan's Architectural
-   Approach/Key Tradeoffs (e.g. a chosen failure-handling behavior becomes an AC, not just prose in
-   the plan). Don't invent behavior that wasn't discussed.
-2. **Every story needs at least one negative and one edge test case** — a story with only
+1. **Trace every AC back to something** — original requirement, clarification answer, existing
+   business rule from repo context, or decision recorded in plan's Architectural
+   Approach/Key Tradeoffs (e.g. chosen failure-handling behavior becomes AC, not just prose in
+   plan). Don't invent behavior not discussed.
+2. **Every story needs at least one negative and one edge test case** — story with only
    happy-path tests isn't done.
 3. **Reuse domain vocabulary from repo context** (entity names, role names, workflow IDs) rather
    than renaming concepts.
-4. **Flag UI-decision stories** (shared shell vs. standalone page, interaction pattern) with the
-   answer captured in Stage 2 stated directly in the story, not left implicit.
-5. **Keep stories vertically sliced** where possible (touches a route + its UI for one
-   user-visible behavior) rather than slicing by layer, unless the plan's sequencing explicitly
-   calls for layer-by-layer delivery (e.g. a migration must land before the route that uses it).
+4. **Flag UI-decision stories** (shared shell vs. standalone page, interaction pattern) with
+   answer captured in Stage 2 stated directly in story, not left implicit.
+5. **Keep stories vertically sliced** where possible (touches route + its UI for one
+   user-visible behavior) rather than slicing by layer, unless plan's sequencing explicitly
+   calls for layer-by-layer delivery (e.g. migration must land before route that uses it).
 6. **Note test executability honestly** — per this repo's actual test setup (discovered in Stage
-   1, or from a tailored version of this skill), mark whether a test case is realistically
-   automatable today or would need a manual pass / a live-integration script (which may cost real
-   money and mutate real state — never wire those into a story's expected CI path without asking).
+   1, or from tailored version of this skill), mark whether test case is realistically
+   automatable today or would need manual pass / live-integration script (which may cost real
+   money and mutate real state — never wire those into story's expected CI path without asking).
 
 ---
 
@@ -361,46 +359,46 @@ docs/tasks/<feature-slug>/
 └── task-list.md          # Stage 4: user stories, AC, test plans
 ```
 
-Use a short kebab-case `<feature-slug>` derived from the requirement title. If `docs/tasks/`
-doesn't exist yet, create it — mirror whatever docs-output convention this repo already uses (e.g.
-a wiki-generation skill's output directory), if one exists.
+Use short kebab-case `<feature-slug>` derived from requirement title. If `docs/tasks/` doesn't
+exist yet, create it — mirror whatever docs-output convention this repo already uses (e.g. a
+wiki-generation skill's output directory), if one exists.
 
-Do not write `plan.md` or `task-list.md` until their respective stage has been approved.
+Don't write `plan.md` or `task-list.md` until their respective stage has been approved.
 
 ---
 
 ## Behavioral Rules
 
-- **Never skip the two STOP points.** Clarifying questions and the plan both require an explicit
-  human response before continuing — this is the entire point of the workflow.
-- **Ground everything in actual repo context, not assumption.** If existing docs contradict the
-  requirement, surface the conflict as a clarifying question, don't silently resolve it. If a
-  planning doc and the actual code disagree, the code (or a code-verified wiki) wins.
-- **No silent scope creep.** If you notice adjacent work that seems necessary, raise it in the
-  plan's Risks/Open Items — don't fold it into scope without the user agreeing.
+- **Never skip the two STOP points.** Clarifying questions and plan both require explicit human
+  response before continuing — this is entire point of workflow.
+- **Ground everything in actual repo context, not assumption.** If existing docs contradict
+  requirement, surface conflict as clarifying question, don't silently resolve it. If a
+  planning doc and actual code disagree, code (or code-verified wiki) wins.
+- **No silent scope creep.** If you notice adjacent work that seems necessary, raise it in
+  plan's Risks/Open Items — don't fold it into scope without user agreeing.
 - **Don't fabricate affected files.** Every "Affected Areas" row should trace to something you
-  actually found via repo context or a repo scan.
-- **Every plan must show real architectural reasoning, not just a component list.** At minimum:
-  one alternative genuinely considered (with why it was rejected), an explicit tradeoff for each
-  non-trivial decision, and a non-functional-impact check that isn't silently skipped. A plan that
-  jumps straight from requirement to "here's what we'll build," with no alternative weighed and no
-  cost named, isn't done — regardless of how small the feature looks. Small features can still
-  cross a boundary, set a precedent for the next ten features, or quietly introduce a coupling
-  that's expensive to undo later.
-- **Test plans must include negative and edge cases, always** — a task list without them is
+  actually found via repo context or repo scan.
+- **Every plan must show real architectural reasoning, not just component list.** At minimum:
+  one alternative genuinely considered (with why it was rejected), explicit tradeoff for each
+  non-trivial decision, and non-functional-impact check that isn't silently skipped. Plan that
+  jumps straight from requirement to "here's what we'll build," with no alternative weighed and
+  no cost named, isn't done — regardless of how small feature looks. Small features can still
+  cross boundary, set precedent for next ten features, or quietly introduce coupling that's
+  expensive to undo later.
+- **Test plans must include negative and edge cases, always** — task list without them is
   incomplete.
-- **Respect this repo's actual conventions, not generic best practice** — surfaced at the
+- **Respect this repo's actual conventions, not generic best practice** — surfaced at
   clarification stage, not discovered during implementation.
-- **Don't recommend fixing unrelated technical debt as part of this requirement.** If the
-  requirement's area touches a known issue, name it in Risks/Open Items so the user can decide
-  whether to fold in the fix — don't expand scope to "also do the refactor" uninvited.
+- **Don't recommend fixing unrelated technical debt as part of this requirement.** If
+  requirement's area touches known issue, name it in Risks/Open Items so user can decide whether
+  to fold in fix — don't expand scope to "also do the refactor" uninvited.
 
 ---
 
 ## Tailoring this skill to a specific codebase
 
-Trigger: the user says something like *"Update this skill to suit the tech stack of this
-codebase"* (or names this skill directly while asking for the same).
+Trigger: user says something like *"Update this skill to suit the tech stack of this
+codebase"* (or names this skill directly while asking for same).
 
 When this happens:
 
@@ -408,14 +406,13 @@ When this happens:
    `qa-tester` in this repo have already been tailored, read them first — their stack findings
    (routing convention, data layer, auth mechanism, test setup, docs location) apply here too.
 2. **Otherwise discover it directly**: what's this repo's actual routing/data/auth/test/docs
-   setup (same checks as `fullstack-developer`'s Phase 0), and where does a project wiki or
-   equivalent context source live, if one exists.
-3. **Rewrite Stage 1's context-gathering list and Stage 2/3/4's placeholder references** (routing
-   location, data-layer/migration mechanism, config/definitions location, UI location, test
-   framework, docs-output convention) with this repo's actual names and paths — mirroring the
-   specificity of a well-grounded, repo-specific version of this skill. Don't invent conventions
+   setup (same checks as `fullstack-developer`'s Phase 0), and where project wiki or equivalent
+   context source lives, if one exists.
+3. **Rewrite Stage 1's context-gathering list and Stage 2/3/4's placeholder references**
+   (routing location, data-layer/migration mechanism, config/definitions location, UI location,
+   test framework, docs-output convention) with this repo's actual names and paths — mirroring
+   specificity of well-grounded, repo-specific version of this skill. Don't invent conventions
    you didn't confirm.
-4. **Update the frontmatter `description`** to name the actual stack, keeping the trigger phrasing
-   generic enough to still match BRD/task-list requests.
-5. **Keep this "Tailoring" section itself**, so the skill can be re-tailored later if the stack
-   changes.
+4. **Update frontmatter `description`** to name actual stack, keeping trigger phrasing generic
+   enough to still match BRD/task-list requests.
+5. **Keep this "Tailoring" section itself**, so skill can be re-tailored later if stack changes.
